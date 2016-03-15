@@ -1,11 +1,11 @@
 import System.Random
 import Data.Matrix hiding (trace)
 
--- nonlin function
+-- Nonlin function
 nonlin:: Double -> Double
 nonlin x = x * (1.0 - x)
 
--- sigmoid function
+-- Sigmoid function
 sigmoid:: Double -> Double
 sigmoid x = 1.0 / (1.0 + (exp (negate x)))
 
@@ -13,16 +13,17 @@ sigmoid x = 1.0 / (1.0 + (exp (negate x)))
 randomList :: (Random a) => Int -> [a]
 randomList seed = randoms (mkStdGen seed)
 
---test with orginal example
+-- Orginal example data
 -------------------------------------------------------------------
--- input_dataset
+-- Input dataset
 input_dataset:: Matrix Double
 input_dataset = fromLists [[0,0,1], [0,1,1], [1,0,1], [1,1,1]]
 
--- labels
+-- Labels
 answers:: Matrix Double
 answers = transpose $  fromLists [[0,0,1,1]]
 -------------------------------------------------------------------
+
 --Make starting weights
 syn0:: Matrix Double
 syn0 = fromLists [[x] | x<- take (ncols input_dataset) (randomList 42 :: [Double])]
@@ -30,13 +31,13 @@ syn0 = fromLists [[x] | x<- take (ncols input_dataset) (randomList 42 :: [Double
 nextGeneration:: Matrix Double -> Matrix Double -> (Matrix Double, Matrix Double) -> (Matrix Double, Matrix Double)
 nextGeneration l0 labels (syn0, _) = (new_syn0, l1)
     where
-        -- forward propagation
+        -- Forward propagation
         l1 = fmap sigmoid $ multStd l0 syn0 
-        -- how much did we miss?
+        -- How much did we miss?
         l1_error =  elementwise (-) labels l1
-        -- multiply how much we missed by the slope of the sigmoid at the values in l1
+        -- Multiply how much we missed by the slope of the sigmoid at the values in l1
         l1_delta = elementwise (*) l1_error $ fmap nonlin l1 
-        -- update weights
+        -- Update weights
         new_syn0 = elementwise (+) syn0 $ multStd (transpose l0) l1_delta 
 
 main = putStrLn message
@@ -44,20 +45,6 @@ main = putStrLn message
        result = iterate (nextGeneration input_dataset answers ) (syn0, fromLists [] )!!10000
        message = "Output after traning:\n" ++ show (snd result)
 
-
-
-
-
-
---Junk code 
-{-
---test with sorting Even and Odd
-input_dataset:: Matrix Double
-input_dataset =  fromLists $ take 100 $ drop 225 $ cycle $ sequence (replicate 8 [0,1])
-
-answers:: Matrix Double
-answers = colVector $ getCol (ncols input_dataset) input_dataset
--}
 
 
 
